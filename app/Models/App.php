@@ -9,4 +9,9 @@ use Illuminate\Notifications\Notifiable;
 class App extends Model
 {
     use HasFactory;
+
+    public function devices()
+    {
+        return $this->hasMany(Device::class);
+    }
 }

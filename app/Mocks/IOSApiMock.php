@@ -31,13 +31,21 @@ class IOSApiMock implements MockInterface
                 if($request->method() == 'POST')
                 {
                     $this->validateRequest($request);
+                   if($this->rateLimitRequest($request->data()['receipt']))
+                        {
+                            return Http::response([
+                                'status'=>'limited',
+                                'message'=>'your request has reached its threshold, please try again in a few moments',
+                            ], Response::HTTP_BAD_REQUEST);
+                        }
+
                     return Http::response([
-                        'status'=>'success',
-                        [
-                            'subscription'=> [
-                                'status'=>false
-                            ]
-                        ]
+                                'status'=>'success',
+                                'data'=>[
+                                    'subscription'=>[
+                                        'status'=>false
+                                    ]
+                                ]
                     ], Response::HTTP_OK);
                 }
             }

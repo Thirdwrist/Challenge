@@ -13,17 +13,7 @@ class GoogleApiMock implements MockInterface
 
     public function mock()
     {
-        Http::fake([
-            'play.google.com/api/verify' => function(Request $request){
-                if($request->method() == 'POST')
-                {
-                    $this->validateRequest($request);
-                    $validateReceipt = $this->validateReceipt($request->data()['receipt']);
-                    return $this->response($validateReceipt);
-                }
 
-            }
-        ]);
 
         Http::fake([
             'play.google.com/api/subscription/verify' =>function(Request $request){
@@ -49,6 +39,18 @@ class GoogleApiMock implements MockInterface
                     ], Response::HTTP_OK);
 
                 }
+            }
+        ]);
+
+         Http::fake([
+            'play.google.com/api/verify' => function(Request $request){
+                if($request->method() == 'POST')
+                {
+                    $this->validateRequest($request);
+                    $validateReceipt = $this->validateReceipt($request->data()['receipt']);
+                    return $this->response($validateReceipt);
+                }
+
             }
         ]);
     }

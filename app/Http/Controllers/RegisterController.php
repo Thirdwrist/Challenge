@@ -8,6 +8,9 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use App\Http\Controllers\Traits\RequestTrait;
+use App\Models\Subscription;
+use App\Services\DeviceService;
+use App\Services\SubscriptionService;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
@@ -19,12 +22,18 @@ class RegisterController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests, RequestTrait;
 
+    private $deviceService;
+    public function __construct(DeviceService $deviceService)
+    {
+        $this->deviceService = $deviceService;
+    }
+
     public function register(Request $request)
     {
         $this->validate($request, [
             'name'=>['sometimes', 'string'],
             'app_id'=> ['required', 'exists:apps,id'],
-            'appid'=>[Rule::requiredIf(($os = strtoupper($request->os)) === DeviceEnum::IOS)],
+            'appid'=>[Rule::requiredIf(strtoupper($request->os) === DeviceEnum::IOS)],
             'uid'=>[Rule::requiredIf(strtoupper($request->os) === DeviceEnum::GOOGLE)],
             'lang'=>['string', 'required'],
             'os' => ['string', 'required', static function($attribute, $value, $fail){
@@ -33,7 +42,6 @@ class RegisterController extends BaseController
                     $fail("invalid $attribute");
                 }
             }],
-
 
         ]);
 
@@ -45,34 +53,29 @@ class RegisterController extends BaseController
         if((isset($googleDevice) && $googleDevice) || (isset($IOSDevice) && $IOSDevice) )
             return $this->response(Response::HTTP_OK);
 
-        $device = Device::create([
-               'name'=> $request->name ?? null,
-               'app_id'=> $request->app_id,
-               'os'=> $os,
-               'lang'=> $request->lang,
-               'appid'=> ($os === DeviceEnum::IOS) ? $request->appid: null,
-               'uid'=> ($os === DeviceEnum::GOOGLE) ? $request->uid: null
-        ]);
+        $device = $this->deviceService->createDevice($request);
         $data = [
             'access_token'=> $device->createToken($request->uid ?? $request->appid)->plainTextToken
         ];
          return $this->response(Response::HTTP_CREATED, $data);
     }
 
-    public function fake()
+    public function fake(SubscriptionService $subService)
     {
-
-        $res = Http::post('store.apple.com/api/verify', [
-            'receipt'=>111111,
+        $subGoogle = Http::post('play.google.com/api/subscription/verify', [
+            'receipt'=>1234566,
         ])->json();
 
-        $resGoogle = Http::post('play.google.com/api/verify', [
-            'receipt'=>01234566
-        ])->json();
+        // $subGoogle = Http::post('store.apple.com/api/subscription/verify', [
+        //     'receipt'=>1234566,
+        //     'buygon'=>'busrt my gun'
+        // ])->json();
 
-        // $subGoogle = 
-
-        return response($resGoogle);
+        // $sub = Subscription::find(1);
+        // $subService->updateExpiration($sub);
+        // dd($sub->refresh());
+        dd(Subscription::where('expired', true)->count());
+        // return response($subGoogle);
 
     }
 }

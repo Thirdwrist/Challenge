@@ -6,6 +6,9 @@ use App\Enums\DeviceEnum;
 use App\Http\Controllers\Traits\RequestTrait;
 use App\Models\Payment;
 use App\Models\Subscription;
+use App\Rules\SubscriptionExist;
+use App\Services\PaymentService;
+use App\Services\SubscriptionService;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
@@ -18,26 +21,26 @@ class VerifyPaymentController extends Controller
 {
     use RequestTrait;
 
+    protected $paymentService, $subscriptionService;
+    public function __construct(PaymentService $paymentService, SubscriptionService $subscriptionService)
+    {
+        $this->paymentService = $paymentService;
+        $this->subscriptionService = $subscriptionService;
+    }
+
     public function verify(Request $request)
     {
         $validate = Validator::make($request->all(), [
-            'receipt'=>['required', 'integer'],
+            'receipt'=>['required', 'integer', New SubscriptionExist],
         ]);
         if($validate->fails())
         {
            throw new ValidationException($validate);
         }
 
-        if($request->user()->os === DeviceEnum::IOS)
-            $url = config('services.apple.base_url') . 'verify';
-        if($request->user()->os === DeviceEnum::GOOGLE)
-            $url = config('services.google.base_url') . 'verify';
+       $res = $this->paymentService->verifyPayment($request);
 
-        $res = Http::post($url, [
-            'receipt'=>$request->receipt
-        ]);
-
-        $payment = Payment::create([
+        $payment = $this->paymentService->createPayment([
                 'device_id'=>$request->user()->id,
                 'receipt'=> $request->receipt,
                 'status'=> $res->json()['status']
@@ -45,7 +48,7 @@ class VerifyPaymentController extends Controller
 
         if($res->status() === Response::HTTP_OK)
         {
-            Subscription::create([
+            $this->subscriptionService->createSubscription([
                 'payment_id'=> $payment->id,
                 'expires_on'=>$this->changeToServerTimeZone($res->json()['expires_on'], config('services.apple.timezone')),
                 'device_id'=>$request->user()->id

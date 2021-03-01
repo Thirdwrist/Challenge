@@ -21,6 +21,8 @@ CREATE TABLE devices (
 	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
+    INDEX(uid, os, appid, lang),
+
 	FOREIGN KEY(app_id)
 		REFERENCES apps(id)
 		ON DELETE CASCADE
@@ -34,6 +36,9 @@ CREATE TABLE payments (
 	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
+
+	INDEX(receipt, status, device_id),
+
 	FOREIGN KEY(device_id)
 			REFERENCES devices(id)
 			ON DELETE CASCADE
@@ -43,10 +48,14 @@ CREATE TABLE payments (
 CREATE TABLE subscriptions (
 	id INT KEY AUTO_INCREMENT NOT NULL,
 	expires_on TIMESTAMP NOT NULL,
+	expired bool,
 	device_id INT NOT NULL,
 	payment_id INT NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+
+	INDEX(expires_on, expired, payment_id, device_id),
 
 		FOREIGN KEY(device_id)
 			REFERENCES devices(id)

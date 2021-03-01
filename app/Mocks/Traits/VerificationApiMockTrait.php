@@ -34,10 +34,9 @@ trait VerificationApiMockTrait
     private function rateLimitRequest($int) :bool
     {
         $rand = random_int(0,1);
-        $receipt = str_split($int);
-        $limit = (end($receipt) % 6) === 0;
-
-        return $rand && $limit;
+        $receipt = str_split((string)$int);
+        $limit = ((int)end($receipt)) % 6;
+        return ($rand == 1) && ($limit === 0);
     }
 
     private function response(bool $status)

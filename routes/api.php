@@ -23,4 +23,4 @@ Route::middleware(['auth:sanctum'])->group(function(){
 
 Route::post('register', [RegisterController::class, 'register']);
 
-Route::post('fake', [RegisterController::class, 'fake']);
+Route::get('fake', [RegisterController::class, 'fake']);

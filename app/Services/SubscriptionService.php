@@ -2,13 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\Subscription;
 use App\Repositories\SubscriptionRepository;
-use Illuminate\Database\Eloquent\Collection;
+use App\Services\Thirdparties\GoogleVerifySubscription;
 
 class SubscriptionService
 {
     private $subscriptionRepository;
-    public function __construct(SubscriptionRepository $subscriptionRepository)
+    public function __construct(SubscriptionRepository $subscriptionRepository, GoogleVerifySubscription $googleVerifySubscription)
     {
         $this->subscriptionRepository = $subscriptionRepository;
     }
@@ -17,9 +18,14 @@ class SubscriptionService
        return $this->subscriptionRepository->getExpiredSubscriptions();
     }
 
-    public function verifySubscriptions(Collection $subscriptions)
+    public function updateExpiration(Subscription $subscription)
     {
-        
+        $this->subscriptionRepository->updateExpiration($subscription);
+    }
+
+    public function createSubscription($data)
+    {
+        return $this->subscriptionRepository->create($data);
     }
 }
 

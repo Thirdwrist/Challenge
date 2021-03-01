@@ -6,7 +6,7 @@ use App\Models\Subscription;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpFoundation\Response;
 
-class GoogleVerifySubscription implements ThirdpartyInterface{
+class IOSVerifySubscription implements ThirdpartyInterface{
 
     private $subscription;
     public function setSubscription(Subscription $subscription)
@@ -16,7 +16,7 @@ class GoogleVerifySubscription implements ThirdpartyInterface{
     }
 
     public function run(){
-       return Http::post(config('services.google.base_url').'subscription/verify', [
+       return Http::post(config('services.apple.base_url'). 'subscription/verify', [
            'receipt'=>$this->subscription->payment->receipt
        ]);
     }

@@ -13,8 +13,18 @@ class Device extends Model
 
     protected $guarded = [];
 
-    public function subscriptions()
+    public function subscription()
     {
-        return $this->hasMany(Subscription::class);
+        return $this->hasOne(Subscription::class);
+    }
+
+    public function app()
+    {
+        return $this->belongsTo(App::class);
+    }
+
+    public function payment()
+    {
+        return $this->hasMany(Payment::class);
     }
 }

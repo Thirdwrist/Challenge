@@ -14,4 +14,8 @@ class Subscription extends Model
     {
         return $this->belongsTo(Device::class);
     }
+
+    public function payment(){
+        return $this->belongsTo(Payment::class);
+    }
 }
