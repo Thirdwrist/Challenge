@@ -60,22 +60,4 @@ class RegisterController extends BaseController
          return $this->response(Response::HTTP_CREATED, $data);
     }
 
-    public function fake(SubscriptionService $subService)
-    {
-        $subGoogle = Http::post('play.google.com/api/subscription/verify', [
-            'receipt'=>1234566,
-        ])->json();
-
-        // $subGoogle = Http::post('store.apple.com/api/subscription/verify', [
-        //     'receipt'=>1234566,
-        //     'buygon'=>'busrt my gun'
-        // ])->json();
-
-        // $sub = Subscription::find(1);
-        // $subService->updateExpiration($sub);
-        // dd($sub->refresh());
-        dd(Subscription::where('expired', true)->count());
-        // return response($subGoogle);
-
-    }
 }
